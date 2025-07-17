@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #0b1426;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .trading-panel {
+    @apply bg-trading-surface border border-trading-border rounded-lg shadow-lg;
+  }
+
+  .trading-button {
+    @apply px-3 py-1.5 rounded text-sm font-medium transition-colors;
+  }
+
+  .trading-button-primary {
+    @apply trading-button bg-trading-accent text-white hover:bg-blue-600;
+  }
+
+  .trading-button-success {
+    @apply trading-button bg-trading-success text-white hover:bg-green-600;
+  }
+
+  .trading-button-danger {
+    @apply trading-button bg-trading-danger text-white hover:bg-red-600;
+  }
+
+  .trading-input {
+    @apply bg-trading-bg border border-trading-border rounded px-3 py-2 text-trading-text 
+           focus:outline-none focus:border-trading-accent;
+  }
+
+  .price-up {
+    @apply text-chart-green;
+  }
+
+  .price-down {
+    @apply text-chart-red;
+  }
+
+  .price-neutral {
+    @apply text-trading-text;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #374151 #1a2332;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #1a2332;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #374151;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #4b5563;
+  }
+} 
