@@ -1,24 +1,14 @@
 import React, { useState } from "react";
-import {
-  Plus,
-  Search,
-  Star,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-} from "lucide-react";
+import { Plus, Search, Minus } from "lucide-react";
 import { useMarketStore } from "../store/marketStore";
-import { Stock } from "../types/market";
+import SingleTicker from "./SingleTicker";
 import clsx from "clsx";
 
 const Watchlist: React.FC = () => {
   const {
-    stocks,
     watchlists,
     activeWatchlist,
     selectedSymbol,
-    isConnected,
-    dataSource,
     setActiveWatchlist,
     setSelectedSymbol,
     addToWatchlist,
@@ -31,29 +21,11 @@ const Watchlist: React.FC = () => {
   const activeWatchlistData = watchlists.find((w) => w.id === activeWatchlist);
   const watchlistSymbols = activeWatchlistData?.symbols || [];
 
-  const filteredStocks = watchlistSymbols
-    .map((symbol) => stocks[symbol])
-    .filter(
-      (stock) =>
-        stock && stock.symbol.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const filteredSymbols = watchlistSymbols.filter((symbol) =>
+    symbol.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const formatPrice = (price: number) => `$${price.toFixed(2)}`;
-  const formatChange = (change: number) =>
-    `${change >= 0 ? "+" : ""}${change.toFixed(2)}`;
-  const formatChangePercent = (change: number) =>
-    `${change >= 0 ? "+" : ""}${change.toFixed(2)}%`;
-
-  const formatVolume = (volume: number) => {
-    if (volume >= 1000000) {
-      return `${(volume / 1000000).toFixed(1)}M`;
-    } else if (volume >= 1000) {
-      return `${(volume / 1000).toFixed(1)}K`;
-    }
-    return volume.toString();
-  };
-
-  const handleStockSelect = (symbol: string) => {
+  const handleTickerClick = (symbol: string) => {
     setSelectedSymbol(symbol === selectedSymbol ? null : symbol);
   };
 
@@ -70,12 +42,6 @@ const Watchlist: React.FC = () => {
     if (activeWatchlist) {
       removeFromWatchlist(activeWatchlist, symbol);
     }
-  };
-
-  const getPriceColorClass = (change: number) => {
-    if (change > 0) return "text-chart-green";
-    if (change < 0) return "text-chart-red";
-    return "text-trading-text";
   };
 
   return (
@@ -134,97 +100,38 @@ const Watchlist: React.FC = () => {
         </div>
       </div>
 
-      {/* Stock List */}
+      {/* Symbol List */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        {!isConnected && dataSource === "fallback" ? (
-          <div className="p-4 text-center">
-            <div className="text-trading-danger mb-2">⚠️ Data Unavailable</div>
-            <div className="text-sm text-trading-text-muted">
-              Polygon.io API error. Market data service is temporarily
-              unavailable.
-            </div>
-            <div className="text-xs text-trading-text-muted mt-2">
-              Please verify your API key or check your plan limits.
-            </div>
-          </div>
-        ) : filteredStocks.length === 0 ? (
+        {filteredSymbols.length === 0 ? (
           <div className="p-4 text-center text-trading-text-muted">
             {searchTerm ? "No matching symbols" : "No symbols in watchlist"}
           </div>
         ) : (
           <div className="space-y-1 p-2">
-            {filteredStocks.map((stock) => (
+            {filteredSymbols.map((symbol) => (
               <div
-                key={stock.symbol}
-                onClick={() => handleStockSelect(stock.symbol)}
+                key={symbol}
                 className={clsx(
-                  "p-3 rounded cursor-pointer transition-all duration-200 border",
-                  selectedSymbol === stock.symbol
+                  "relative group rounded border transition-all duration-200",
+                  selectedSymbol === symbol
                     ? "bg-trading-accent/20 border-trading-accent"
                     : "bg-trading-bg border-transparent hover:bg-trading-surface"
                 )}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-sm">
-                      {stock.symbol}
-                    </span>
-                    <button
-                      onClick={(e) => handleRemoveSymbol(stock.symbol, e)}
-                      className="opacity-0 group-hover:opacity-100 hover:text-trading-danger transition-all"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </button>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    {stock.change > 0 ? (
-                      <TrendingUp className="w-3 h-3 text-chart-green" />
-                    ) : stock.change < 0 ? (
-                      <TrendingDown className="w-3 h-3 text-chart-red" />
-                    ) : null}
-                    <span
-                      className={clsx(
-                        "text-sm font-mono",
-                        getPriceColorClass(stock.change)
-                      )}
-                    >
-                      {formatPrice(stock.price)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-trading-text-muted truncate">
-                    {stock.name}
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={clsx(
-                        "font-mono",
-                        getPriceColorClass(stock.change)
-                      )}
-                    >
-                      {formatChange(stock.change)}
-                    </span>
-                    <span
-                      className={clsx(
-                        "font-mono",
-                        getPriceColorClass(stock.change)
-                      )}
-                    >
-                      ({formatChangePercent(stock.changePercent)})
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mt-1 text-xs text-trading-text-muted">
-                  <span>Vol: {formatVolume(stock.volume)}</span>
-                  {stock.bid && stock.ask && (
-                    <span>
-                      Bid/Ask: {formatPrice(stock.bid)}/{formatPrice(stock.ask)}
-                    </span>
-                  )}
-                </div>
+                <button
+                  onClick={(e) => handleRemoveSymbol(symbol, e)}
+                  className="absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100 hover:text-trading-danger transition-all bg-trading-bg/80 rounded p-1"
+                >
+                  <Minus className="w-3 h-3" />
+                </button>
+                <SingleTicker
+                  symbol={symbol}
+                  onClick={handleTickerClick}
+                  colorTheme="dark"
+                  isTransparent={true}
+                  width="100%"
+                  height={100}
+                />
               </div>
             ))}
           </div>

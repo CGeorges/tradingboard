@@ -10,6 +10,7 @@ import {
   ChartSettings,
   TimeFrame 
 } from '../types/market';
+import { watchlistStorage } from '../services/watchlistStorage';
 
 interface MarketStore {
   // Market Data
@@ -45,6 +46,7 @@ interface MarketStore {
   updateNews: (id: string, update: Partial<NewsItem>) => void;
   setNewsFilter: (filter: string) => void;
   
+  initializeWatchlists: () => Promise<void>;
   addWatchlist: (watchlist: Watchlist) => void;
   removeWatchlist: (id: string) => void;
   updateWatchlist: (id: string, update: Partial<Watchlist>) => void;
@@ -74,20 +76,7 @@ export const useMarketStore = create<MarketStore>()(
     news: [],
     alerts: [],
     
-    watchlists: [
-      {
-        id: 'default',
-        name: 'My Watchlist',
-        symbols: ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN'],
-        type: 'custom'
-      },
-      {
-        id: 'volatility',
-        name: 'High Volatility',
-        symbols: ['GME', 'AMC', 'PLTR', 'ROKU'],
-        type: 'volatility'
-      }
-    ],
+    watchlists: [],
     activeWatchlist: 'default',
     
     chartSettings: {
@@ -158,38 +147,114 @@ export const useMarketStore = create<MarketStore>()(
     
     setNewsFilter: (filter) => set({ selectedNewsFilter: filter }),
     
-    addWatchlist: (watchlist) => set((state) => ({
-      watchlists: [...state.watchlists, watchlist]
-    })),
+    initializeWatchlists: async () => {
+      try {
+        let watchlists = await watchlistStorage.loadWatchlists();
+        
+        // If no watchlists found in IndexedDB, use defaults
+        if (watchlists.length === 0) {
+          watchlists = await watchlistStorage.getDefaultWatchlists();
+          await watchlistStorage.saveWatchlists(watchlists);
+        }
+        
+        set({ 
+          watchlists,
+          activeWatchlist: watchlists.length > 0 ? watchlists[0].id : null
+        });
+      } catch (error) {
+        console.error('Error initializing watchlists:', error);
+        // Fall back to default watchlists
+        const defaultWatchlists = await watchlistStorage.getDefaultWatchlists();
+        set({ 
+          watchlists: defaultWatchlists,
+          activeWatchlist: defaultWatchlists.length > 0 ? defaultWatchlists[0].id : null
+        });
+      }
+    },
     
-    removeWatchlist: (id) => set((state) => ({
-      watchlists: state.watchlists.filter(w => w.id !== id),
-      activeWatchlist: state.activeWatchlist === id ? null : state.activeWatchlist
-    })),
+    addWatchlist: (watchlist) => {
+      set((state) => ({
+        watchlists: [...state.watchlists, watchlist]
+      }));
+      
+      // Persist to IndexedDB
+      watchlistStorage.saveWatchlist(watchlist).catch(error => {
+        console.error('Error saving watchlist to IndexedDB:', error);
+      });
+    },
     
-    updateWatchlist: (id, update) => set((state) => ({
-      watchlists: state.watchlists.map(w => 
-        w.id === id ? { ...w, ...update } : w
-      )
-    })),
+    removeWatchlist: (id) => {
+      set((state) => ({
+        watchlists: state.watchlists.filter(w => w.id !== id),
+        activeWatchlist: state.activeWatchlist === id ? null : state.activeWatchlist
+      }));
+      
+      // Persist to IndexedDB
+      watchlistStorage.deleteWatchlist(id).catch(error => {
+        console.error('Error deleting watchlist from IndexedDB:', error);
+      });
+    },
+    
+    updateWatchlist: (id, update) => {
+      const state = get();
+      const updatedWatchlist = state.watchlists.find(w => w.id === id);
+      if (updatedWatchlist) {
+        const newWatchlist = { ...updatedWatchlist, ...update };
+        
+        set((state) => ({
+          watchlists: state.watchlists.map(w => 
+            w.id === id ? newWatchlist : w
+          )
+        }));
+        
+        // Persist to IndexedDB
+        watchlistStorage.saveWatchlist(newWatchlist).catch(error => {
+          console.error('Error updating watchlist in IndexedDB:', error);
+        });
+      }
+    },
     
     setActiveWatchlist: (id) => set({ activeWatchlist: id }),
     
-    addToWatchlist: (watchlistId, symbol) => set((state) => ({
-      watchlists: state.watchlists.map(w => 
-        w.id === watchlistId && !w.symbols.includes(symbol)
-          ? { ...w, symbols: [...w.symbols, symbol] }
-          : w
-      )
-    })),
+    addToWatchlist: (watchlistId, symbol) => {
+      const state = get();
+      const watchlist = state.watchlists.find(w => w.id === watchlistId);
+      
+      if (watchlist && !watchlist.symbols.includes(symbol)) {
+        const updatedWatchlist = { ...watchlist, symbols: [...watchlist.symbols, symbol] };
+        
+        set((state) => ({
+          watchlists: state.watchlists.map(w => 
+            w.id === watchlistId ? updatedWatchlist : w
+          )
+        }));
+        
+        // Persist to IndexedDB
+        watchlistStorage.saveWatchlist(updatedWatchlist).catch(error => {
+          console.error('Error saving watchlist to IndexedDB:', error);
+        });
+      }
+    },
     
-    removeFromWatchlist: (watchlistId, symbol) => set((state) => ({
-      watchlists: state.watchlists.map(w => 
-        w.id === watchlistId
-          ? { ...w, symbols: w.symbols.filter(s => s !== symbol) }
-          : w
-      )
-    })),
+    removeFromWatchlist: (watchlistId, symbol) => {
+      const state = get();
+      const watchlist = state.watchlists.find(w => w.id === watchlistId);
+      
+      if (watchlist) {
+        const updatedWatchlist = { ...watchlist, symbols: watchlist.symbols.filter(s => s !== symbol) };
+        
+        set((state) => ({
+          watchlists: state.watchlists.map(w => 
+            w.id === watchlistId ? updatedWatchlist : w
+          )
+        }));
+        
+        // Persist to IndexedDB
+        watchlistStorage.saveWatchlist(updatedWatchlist).catch(error => {
+          console.error('Error saving watchlist to IndexedDB:', error);
+        });
+      }
+    },
     
     addAlert: (alert) => set((state) => ({
       alerts: [...state.alerts, alert]

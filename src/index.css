@@ -84,3 +84,7 @@
     background: #4b5563;
   }
 } 
+
+.tradingview-widget-copyright {
+  display: none !important;
+}

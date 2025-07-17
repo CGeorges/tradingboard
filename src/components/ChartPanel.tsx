@@ -1,25 +1,34 @@
 import React, { useState } from "react";
-import { BarChart3, Settings, TrendingUp, Clock } from "lucide-react";
+import { BarChart3, Settings } from "lucide-react";
 import { useMarketStore } from "../store/marketStore";
 import { TimeFrame } from "../types/market";
-import TradingViewChart from "./TradingViewChart";
+import { AdvancedRealTimeChart } from "react-ts-tradingview-widgets";
 import clsx from "clsx";
 
 const ChartPanel: React.FC = () => {
-  const {
-    selectedSymbol,
-    stocks,
-    chartSettings,
-    isConnected,
-    dataSource,
-    setTimeframe,
-  } = useMarketStore();
+  const { selectedSymbol, chartSettings, setTimeframe } = useMarketStore();
 
   const [showSettings, setShowSettings] = useState(false);
 
-  // Map our timeframes to TradingView intervals
-  const timeframeToInterval = (timeframe: TimeFrame): string => {
-    const mapping: Record<TimeFrame, string> = {
+  // Map our timeframes to TradingView intervals (compatible with react-ts-tradingview-widgets)
+  const timeframeToInterval = (
+    timeframe: TimeFrame
+  ):
+    | "1"
+    | "3"
+    | "5"
+    | "15"
+    | "30"
+    | "60"
+    | "120"
+    | "180"
+    | "240"
+    | "D"
+    | "W" => {
+    const mapping: Record<
+      TimeFrame,
+      "1" | "3" | "5" | "15" | "30" | "60" | "120" | "180" | "240" | "D" | "W"
+    > = {
       "1m": "1",
       "5m": "5",
       "15m": "15",
@@ -40,8 +49,6 @@ const ChartPanel: React.FC = () => {
     { value: "4h", label: "4H" },
     { value: "1d", label: "1D" },
   ];
-
-  const currentStock = selectedSymbol ? stocks[selectedSymbol] : null;
 
   const handleTimeframeChange = (timeframe: TimeFrame) => {
     setTimeframe(timeframe);
@@ -65,27 +72,6 @@ const ChartPanel: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <h2 className="text-lg font-semibold">{selectedSymbol}</h2>
-            {currentStock && (
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="font-mono">
-                  ${currentStock.price.toFixed(2)}
-                </span>
-                <span
-                  className={clsx(
-                    "font-mono",
-                    currentStock.change > 0
-                      ? "text-chart-green"
-                      : currentStock.change < 0
-                      ? "text-chart-red"
-                      : "text-trading-text"
-                  )}
-                >
-                  {currentStock.change >= 0 ? "+" : ""}
-                  {currentStock.change.toFixed(2)} (
-                  {currentStock.changePercent.toFixed(2)}%)
-                </span>
-              </div>
-            )}
           </div>
 
           <div className="flex items-center space-x-2">
@@ -124,11 +110,20 @@ const ChartPanel: React.FC = () => {
 
       {/* TradingView Chart */}
       <div className="flex-1">
-        <TradingViewChart
+        <AdvancedRealTimeChart
           symbol={selectedSymbol}
           interval={timeframeToInterval(chartSettings.timeframe)}
           theme="dark"
           autosize={true}
+          timezone="Etc/UTC"
+          locale="en"
+          studies={["VWAP@tv-basicstudies", "MAExp@tv-basicstudies"]}
+          hide_top_toolbar={false}
+          hide_side_toolbar={false}
+          enable_publishing={false}
+          allow_symbol_change={false}
+          save_image={false}
+          container_id={`chart-${selectedSymbol}`}
         />
       </div>
     </div>

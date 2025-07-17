@@ -5,14 +5,22 @@ import Watchlist from "./components/Watchlist";
 import ChartPanel from "./components/ChartPanel";
 import NewsPanel from "./components/NewsPanel";
 import { marketDataService } from "./services/marketDataService";
+import { useMarketStore } from "./store/marketStore";
 
 function App() {
+  const { initializeWatchlists } = useMarketStore();
+
   useEffect(() => {
+    // Initialize watchlists from IndexedDB on app load
+    initializeWatchlists().catch((error) => {
+      console.error("Error initializing watchlists:", error);
+    });
+
     // Cleanup on unmount
     return () => {
       marketDataService.disconnect();
     };
-  }, []);
+  }, [initializeWatchlists]);
 
   return (
     <div className="h-screen bg-trading-bg text-trading-text flex flex-col">
