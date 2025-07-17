@@ -43,8 +43,10 @@ export interface Watchlist {
   id: string;
   name: string;
   symbols: string[];
+  pinnedSymbols: string[]; // Symbols pinned to the top
   createdAt: Date;
   updatedAt: Date;
+  isDefault?: boolean; // Prevent deletion of default watchlists
 }
 
 export interface MarketAlert {

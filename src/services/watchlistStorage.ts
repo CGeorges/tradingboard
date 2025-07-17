@@ -172,18 +172,25 @@ export class WatchlistStorageService {
 
   async getDefaultWatchlists(): Promise<Watchlist[]> {
     // Return default watchlists if IndexedDB is empty
+    const now = new Date();
     return [
       {
         id: 'default',
         name: 'My Watchlist',
         symbols: ['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN'],
-        type: 'custom'
+        pinnedSymbols: ['AAPL'], // AAPL is pinned by default
+        createdAt: now,
+        updatedAt: now,
+        isDefault: true
       },
       {
         id: 'volatility',
         name: 'High Volatility',
         symbols: ['GME', 'AMC', 'PLTR', 'ROKU'],
-        type: 'volatility'
+        pinnedSymbols: [],
+        createdAt: now,
+        updatedAt: now,
+        isDefault: true
       }
     ];
   }
