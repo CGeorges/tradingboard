@@ -1,4 +1,4 @@
-import { ChartData, NewsItem } from '../types/market';
+import { ChartData } from '../types/market';
 import { useMarketStore } from '../store/marketStore';
 
 export class MarketDataService {
@@ -12,7 +12,7 @@ export class MarketDataService {
 
   private initializeService() {
     // TradingView widgets handle real-time data automatically
-    // We only need to handle chart data requests and news
+    // We only need to handle chart data requests
     console.log('Market data service ready - TradingView widgets provide real-time quotes');
     useMarketStore.getState().setConnectionStatus(true);
     useMarketStore.getState().setDataSource('real');
@@ -112,47 +112,6 @@ export class MarketDataService {
     }
     
     return data.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-  }
-
-  // Simplified news fetching (could be enhanced with real news APIs)
-  public async fetchNews(): Promise<void> {
-    try {
-      // Generate some sample news for demonstration
-      const store = useMarketStore.getState();
-      
-      const sampleNews: NewsItem[] = [
-        {
-          id: `news_${Date.now()}_1`,
-          title: 'Market Update: Tech Stocks Show Strong Performance',
-          summary: 'Technology stocks continue to outperform broader market indices with strong earnings reports.',
-          content: 'Technology companies are reporting better-than-expected earnings, driving investor confidence in the sector.',
-          source: 'Market News',
-          url: '#',
-          publishedAt: new Date(),
-          symbols: ['AAPL', 'MSFT', 'GOOGL'],
-          sentiment: 'positive'
-        },
-        {
-          id: `news_${Date.now()}_2`,
-          title: 'Federal Reserve Signals Potential Rate Changes',
-          summary: 'The Federal Reserve hints at potential monetary policy adjustments in upcoming meetings.',
-          content: 'Market participants are closely watching Federal Reserve communications for signals about future interest rate policy.',
-          source: 'Financial Times',
-          url: '#',
-          publishedAt: new Date(Date.now() - 3600000),
-          symbols: [],
-          sentiment: 'neutral'
-        }
-      ];
-
-      sampleNews.forEach(newsItem => {
-        store.addNews(newsItem);
-      });
-      
-      console.log('Sample news loaded');
-    } catch (error) {
-      console.error('Failed to fetch news:', error);
-    }
   }
 
   // Utility methods for date formatting

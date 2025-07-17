@@ -4,7 +4,6 @@ import {
   Stock, 
   Quote, 
   ChartData, 
-  NewsItem, 
   Watchlist, 
   MarketAlert,
   ChartSettings,
@@ -19,8 +18,7 @@ interface MarketStore {
   chartData: Record<string, ChartData[]>;
   selectedSymbol: string | null;
   
-  // News & Alerts
-  news: NewsItem[];
+  // Alerts
   alerts: MarketAlert[];
   
   // Watchlists
@@ -34,17 +32,12 @@ interface MarketStore {
   isConnected: boolean;
   lastUpdate: Date | null;
   dataSource: 'real' | 'fallback';
-  selectedNewsFilter: string;
   
   // Actions
   updateStock: (symbol: string, data: Partial<Stock>) => void;
   updateQuote: (symbol: string, quote: Quote) => void;
   addChartData: (symbol: string, data: ChartData[]) => void;
   setSelectedSymbol: (symbol: string | null) => void;
-  
-  addNews: (newsItem: NewsItem) => void;
-  updateNews: (id: string, update: Partial<NewsItem>) => void;
-  setNewsFilter: (filter: string) => void;
   
   initializeWatchlists: () => Promise<void>;
   addWatchlist: (watchlist: Watchlist) => void;
@@ -73,7 +66,6 @@ export const useMarketStore = create<MarketStore>()(
     chartData: {},
     selectedSymbol: null,
     
-    news: [],
     alerts: [],
     
     watchlists: [],
@@ -90,7 +82,6 @@ export const useMarketStore = create<MarketStore>()(
     isConnected: false,
     lastUpdate: null,
     dataSource: 'real',
-    selectedNewsFilter: 'all',
     
     // Actions
     updateStock: (symbol, data) => set((state) => ({
@@ -134,18 +125,6 @@ export const useMarketStore = create<MarketStore>()(
     })),
     
     setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
-    
-    addNews: (newsItem) => set((state) => ({
-      news: [newsItem, ...state.news].slice(0, 100) // Keep last 100 items
-    })),
-    
-    updateNews: (id, update) => set((state) => ({
-      news: state.news.map(item => 
-        item.id === id ? { ...item, ...update } : item
-      )
-    })),
-    
-    setNewsFilter: (filter) => set({ selectedNewsFilter: filter }),
     
     initializeWatchlists: async () => {
       try {
@@ -266,7 +245,7 @@ export const useMarketStore = create<MarketStore>()(
     
     toggleAlert: (id) => set((state) => ({
       alerts: state.alerts.map(a => 
-        a.id === id ? { ...a, active: !a.active } : a
+        a.id === id ? { ...a, isActive: !a.isActive } : a
       )
     })),
     

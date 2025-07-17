@@ -5,12 +5,8 @@ export interface Stock {
   change: number;
   changePercent: number;
   volume: number;
-  marketCap?: number;
   bid?: number;
   ask?: number;
-  high52Week?: number;
-  low52Week?: number;
-  avgVolume?: number;
   lastUpdated: Date;
 }
 
@@ -43,33 +39,21 @@ export interface TechnicalIndicator {
   color: string;
 }
 
-export interface NewsItem {
-  id: string;
-  title: string;
-  summary: string;
-  content: string;
-  source: string;
-  url: string;
-  publishedAt: Date;
-  symbols: string[];
-  sentiment?: 'positive' | 'negative' | 'neutral';
-  aiSummary?: string;
-}
-
 export interface Watchlist {
   id: string;
   name: string;
   symbols: string[];
-  type: 'custom' | 'volatility' | 'gappers' | 'earnings' | 'movers';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface MarketAlert {
   id: string;
   symbol: string;
-  type: 'price' | 'volume' | 'news';
-  condition: string;
-  value: number;
-  active: boolean;
+  condition: 'above' | 'below';
+  price: number;
+  type: 'price' | 'volume';
+  isActive: boolean;
   createdAt: Date;
 }
 

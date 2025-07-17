@@ -3,7 +3,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Header from "./components/Header";
 import Watchlist from "./components/Watchlist";
 import ChartPanel from "./components/ChartPanel";
-import NewsPanel from "./components/NewsPanel";
+import TabbedInfoPanel from "./components/TabbedInfoPanel";
 import { marketDataService } from "./services/marketDataService";
 import { useMarketStore } from "./store/marketStore";
 
@@ -50,14 +50,14 @@ function App() {
 
           <PanelResizeHandle className="w-1 bg-trading-border hover:bg-trading-accent transition-colors" />
 
-          {/* Right Panel - News & Info */}
+          {/* Right Panel - Info Tabs */}
           <Panel
             defaultSizePercentage={20}
             minSizePercentage={15}
             maxSizePercentage={30}
           >
             <div className="h-full p-2">
-              <NewsPanel />
+              <TabbedInfoPanel />
             </div>
           </Panel>
         </PanelGroup>
