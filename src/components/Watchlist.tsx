@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import {
-  Plus,
-  Search,
-  Minus,
-  MoreHorizontal,
-  Edit2,
-  Trash2,
-  Copy,
-  Pin,
-  PinOff,
-  ArrowRight,
-  Check,
-  X,
-} from "lucide-react";
+  LuPlus,
+  LuSearch,
+  LuMinus,
+  LuEllipsis,
+  LuPencil,
+  LuTrash2,
+  LuCopy,
+  LuPin,
+  LuPinOff,
+  LuArrowRight,
+  LuCheck,
+  LuX,
+} from "react-icons/lu";
 import { useMarketStore } from "../store/marketStore";
 import SingleTicker from "./SingleTicker";
 import clsx from "clsx";
@@ -163,7 +163,7 @@ const Watchlist: React.FC = () => {
             className="trading-button-primary p-1.5"
             title="Create new watchlist"
           >
-            <Plus className="w-4 h-4" />
+            <LuPlus className="w-4 h-4" />
           </button>
         </div>
 
@@ -185,7 +185,7 @@ const Watchlist: React.FC = () => {
                 className="trading-button-primary p-2"
                 disabled={!newWatchlistName.trim()}
               >
-                <Check className="w-4 h-4" />
+                <LuCheck className="w-4 h-4" />
               </button>
               <button
                 onClick={() => {
@@ -194,7 +194,7 @@ const Watchlist: React.FC = () => {
                 }}
                 className="trading-button p-2"
               >
-                <X className="w-4 h-4" />
+                <LuX className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -244,7 +244,7 @@ const Watchlist: React.FC = () => {
                         : "bg-trading-bg text-trading-text-muted hover:bg-trading-border"
                     )}
                   >
-                    <MoreHorizontal className="w-3 h-3" />
+                    <LuEllipsis className="w-3 h-3" />
                   </button>
                 </div>
               )}
@@ -256,14 +256,14 @@ const Watchlist: React.FC = () => {
                     onClick={() => startEditing(watchlist)}
                     className="flex items-center space-x-2 px-3 py-2 text-sm hover:bg-trading-border w-full text-left"
                   >
-                    <Edit2 className="w-3 h-3" />
+                    <LuPencil className="w-3 h-3" />
                     <span>Rename</span>
                   </button>
                   <button
                     onClick={() => handleDuplicateWatchlist(watchlist.id)}
                     className="flex items-center space-x-2 px-3 py-2 text-sm hover:bg-trading-border w-full text-left"
                   >
-                    <Copy className="w-3 h-3" />
+                    <LuCopy className="w-3 h-3" />
                     <span>Duplicate</span>
                   </button>
                   {watchlists.length > 1 && (
@@ -271,7 +271,7 @@ const Watchlist: React.FC = () => {
                       onClick={() => handleDeleteWatchlist(watchlist.id)}
                       className="flex items-center space-x-2 px-3 py-2 text-sm hover:bg-trading-danger text-trading-danger w-full text-left"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <LuTrash2 className="w-3 h-3" />
                       <span>Delete</span>
                     </button>
                   )}
@@ -283,7 +283,7 @@ const Watchlist: React.FC = () => {
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-trading-text-muted" />
+          <LuSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-trading-text-muted" />
           <input
             type="text"
             placeholder="Search symbols..."
@@ -308,7 +308,7 @@ const Watchlist: React.FC = () => {
             className="trading-button-primary p-2"
             disabled={!newSymbol.trim()}
           >
-            <Plus className="w-4 h-4" />
+            <LuPlus className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -347,9 +347,9 @@ const Watchlist: React.FC = () => {
                       title={isPinned ? "Unpin symbol" : "Pin to top"}
                     >
                       {isPinned ? (
-                        <PinOff className="w-3 h-3" />
+                        <LuPinOff className="w-3 h-3" />
                       ) : (
-                        <Pin className="w-3 h-3" />
+                        <LuPin className="w-3 h-3" />
                       )}
                     </button>
 
@@ -364,7 +364,7 @@ const Watchlist: React.FC = () => {
                         className="p-1 rounded transition-all bg-trading-bg/80 hover:text-trading-accent watchlist-menu-trigger"
                         title="Move to another watchlist"
                       >
-                        <ArrowRight className="w-3 h-3" />
+                        <LuArrowRight className="w-3 h-3" />
                       </button>
 
                       {/* Move Menu */}
@@ -392,14 +392,14 @@ const Watchlist: React.FC = () => {
                       className="p-1 rounded transition-all bg-trading-bg/80 hover:text-trading-danger"
                       title="Remove symbol"
                     >
-                      <Minus className="w-3 h-3" />
+                      <LuMinus className="w-3 h-3" />
                     </button>
                   </div>
 
                   {/* Pinned Indicator */}
                   {isPinned && (
                     <div className="absolute top-1 left-1 z-10">
-                      <Pin className="w-3 h-3 text-trading-accent" />
+                      <LuPin className="w-3 h-3 text-trading-accent" />
                     </div>
                   )}
 

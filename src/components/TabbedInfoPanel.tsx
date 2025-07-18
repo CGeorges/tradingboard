@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar, Newspaper, Grid3x3 } from "lucide-react";
+import { LuCalendar, LuNewspaper, LuGrid3X3 } from "react-icons/lu";
 import {
   EconomicCalendar,
   Timeline,
@@ -13,9 +13,9 @@ const TabbedInfoPanel: React.FC = () => {
   );
 
   const tabs = [
-    { id: "calendar" as const, label: "Calendar", icon: Calendar },
-    { id: "news" as const, label: "News", icon: Newspaper },
-    { id: "heatmap" as const, label: "Heatmap", icon: Grid3x3 },
+    { id: "calendar" as const, label: "Calendar", icon: LuCalendar },
+    { id: "news" as const, label: "News", icon: LuNewspaper },
+    { id: "heatmap" as const, label: "Heatmap", icon: LuGrid3X3 },
   ];
 
   const renderTabContent = () => {

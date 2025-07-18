@@ -1,42 +1,19 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { 
-  Stock, 
-  Quote, 
-  ChartData, 
-  Watchlist, 
-  MarketAlert,
-  ChartSettings,
-  TimeFrame 
+  Watchlist
 } from '../types/market';
 import { watchlistStorage } from '../services/watchlistStorage';
 
 interface MarketStore {
-  // Market Data
-  stocks: Record<string, Stock>;
-  quotes: Record<string, Quote>;
-  chartData: Record<string, ChartData[]>;
+  // Core State
   selectedSymbol: string | null;
-  
-  // Alerts
-  alerts: MarketAlert[];
   
   // Watchlists
   watchlists: Watchlist[];
   activeWatchlist: string | null;
   
-  // Chart Settings
-  chartSettings: ChartSettings;
-  
-  // UI State
-  isConnected: boolean;
-  lastUpdate: Date | null;
-  dataSource: 'real' | 'fallback';
-  
   // Actions
-  updateStock: (symbol: string, data: Partial<Stock>) => void;
-  updateQuote: (symbol: string, quote: Quote) => void;
-  addChartData: (symbol: string, data: ChartData[]) => void;
   setSelectedSymbol: (symbol: string | null) => void;
   
   initializeWatchlists: () => Promise<void>;
@@ -55,84 +32,17 @@ interface MarketStore {
   pinSymbol: (watchlistId: string, symbol: string) => void;
   unpinSymbol: (watchlistId: string, symbol: string) => void;
   reorderSymbols: (watchlistId: string, symbols: string[]) => void;
-  
-  addAlert: (alert: MarketAlert) => void;
-  removeAlert: (id: string) => void;
-  toggleAlert: (id: string) => void;
-  
-  updateChartSettings: (settings: Partial<ChartSettings>) => void;
-  setTimeframe: (timeframe: TimeFrame) => void;
-  
-  setConnectionStatus: (connected: boolean) => void;
-  setDataSource: (source: 'real' | 'fallback') => void;
 }
 
 export const useMarketStore = create<MarketStore>()(
   subscribeWithSelector((set, get) => ({
     // Initial State
-    stocks: {},
-    quotes: {},
-    chartData: {},
     selectedSymbol: null,
-    
-    alerts: [],
     
     watchlists: [],
     activeWatchlist: 'default',
     
-    chartSettings: {
-      timeframe: '1d',
-      indicators: ['VWAP', 'EMA20'],
-      showVolume: true,
-      showGrid: true,
-      theme: 'dark'
-    },
-    
-    isConnected: false,
-    lastUpdate: null,
-    dataSource: 'real',
-    
     // Actions
-    updateStock: (symbol, data) => set((state) => ({
-      stocks: {
-        ...state.stocks,
-        [symbol]: {
-          ...state.stocks[symbol],
-          ...data,
-          lastUpdated: new Date()
-        }
-      },
-      lastUpdate: new Date()
-    })),
-    
-    updateQuote: (symbol, quote) => set((state) => ({
-      quotes: {
-        ...state.quotes,
-        [symbol]: quote
-      },
-      stocks: {
-        ...state.stocks,
-        [symbol]: {
-          ...state.stocks[symbol],
-          price: quote.price,
-          change: quote.change,
-          changePercent: quote.changePercent,
-          volume: quote.volume,
-          bid: quote.bid,
-          ask: quote.ask,
-          lastUpdated: quote.timestamp
-        }
-      },
-      lastUpdate: new Date()
-    })),
-    
-    addChartData: (symbol, data) => set((state) => ({
-      chartData: {
-        ...state.chartData,
-        [symbol]: data
-      }
-    })),
-    
     setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
     
     initializeWatchlists: async () => {
@@ -371,37 +281,6 @@ export const useMarketStore = create<MarketStore>()(
           console.error('Error reordering symbols in IndexedDB:', error);
         });
       }
-    },
-    
-    addAlert: (alert) => set((state) => ({
-      alerts: [...state.alerts, alert]
-    })),
-    
-    removeAlert: (id) => set((state) => ({
-      alerts: state.alerts.filter(a => a.id !== id)
-    })),
-    
-    toggleAlert: (id) => set((state) => ({
-      alerts: state.alerts.map(a => 
-        a.id === id ? { ...a, isActive: !a.isActive } : a
-      )
-    })),
-    
-    updateChartSettings: (settings) => set((state) => ({
-      chartSettings: { ...state.chartSettings, ...settings }
-    })),
-    
-    setTimeframe: (timeframe) => set((state) => ({
-      chartSettings: { ...state.chartSettings, timeframe }
-    })),
-    
-    setConnectionStatus: (connected) => set({ 
-      isConnected: connected,
-      lastUpdate: connected ? new Date() : get().lastUpdate
-    }),
-    
-    setDataSource: (source) => set({
-      dataSource: source
-    })
+    }
   }))
 ); 
