@@ -113,3 +113,6 @@
 .tradingview-widget-copyright {
   display: none !important;
 }
+.js-copyright-label {
+  display: none !important;
+}
