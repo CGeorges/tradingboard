@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Images
 
 on:
   push:
@@ -8,6 +8,19 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - name: frontend
+            context: .
+            dockerfile: Dockerfile
+            image: cgeorges/tradingboard-frontend
+            description: "TradingBoard Frontend - React application for professional trading dashboard"
+          - name: backend
+            context: ./backend
+            dockerfile: Dockerfile
+            image: cgeorges/tradingboard-backend
+            description: "TradingBoard Backend - Express.js API service with PostgreSQL"
 
     steps:
       - name: Checkout code
@@ -22,31 +35,48 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract metadata for ${{ matrix.service.name }}
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: cgeorges/tradingboard
+          images: ${{ matrix.service.image }}
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push Docker image
+      - name: Build and push ${{ matrix.service.name }} Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ${{ matrix.service.context }}
+          file: ${{ matrix.service.context }}/${{ matrix.service.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,key=${{ matrix.service.name }}
+          cache-to: type=gha,mode=max,key=${{ matrix.service.name }}
 
-      - name: Update Docker Hub description
+  update-descriptions:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo:
+          - name: cgeorges/tradingboard-frontend
+            description: "TradingBoard Frontend - React application for professional trading dashboard with real-time market data, technical indicators, and customizable watchlists."
+          - name: cgeorges/tradingboard-backend
+            description: "TradingBoard Backend - Express.js API service with PostgreSQL for persistent data storage, CRUD operations, and RESTful endpoints."
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Docker Hub description for ${{ matrix.repo.name }}
         uses: peter-evans/dockerhub-description@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: cgeorges/tradingboard
+          repository: ${{ matrix.repo.name }}
+          short-description: ${{ matrix.repo.description }}
           readme-filepath: ./README.md

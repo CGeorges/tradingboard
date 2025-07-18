@@ -1,177 +1,125 @@
 import { Watchlist } from '../types/market';
 
 export class WatchlistStorageService {
-  private dbName = 'TradingBoardDB';
-  private version = 1;
-  private storeName = 'watchlists';
-  private db: IDBDatabase | null = null;
+  private apiBaseUrl: string;
 
   constructor() {
-    this.initDB();
+    // Use environment variable or default to backend API URL
+    // In production (Docker), use the backend service name
+    // In development, use localhost
+    this.apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    console.log('🔗 API Base URL:', this.apiBaseUrl);
   }
 
-  private async initDB(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, this.version);
+  private async fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${this.apiBaseUrl}${endpoint}`;
+    
+    const defaultOptions: RequestInit = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
 
-      request.onerror = () => {
-        console.error('Error opening IndexedDB:', request.error);
-        reject(request.error);
-      };
+    const mergedOptions = {
+      ...defaultOptions,
+      ...options,
+      headers: {
+        ...defaultOptions.headers,
+        ...(options.headers || {}),
+      },
+    };
 
-      request.onsuccess = () => {
-        this.db = request.result;
-        console.log('IndexedDB initialized successfully');
-        resolve();
-      };
+    try {
+      const response = await fetch(url, mergedOptions);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(`API Error ${response.status}: ${errorData.message || response.statusText}`);
+      }
 
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        
-        // Create watchlists object store if it doesn't exist
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          db.createObjectStore(this.storeName, { keyPath: 'id' });
-          console.log('Created watchlists object store');
-        }
-      };
-    });
-  }
-
-  private async ensureDB(): Promise<IDBDatabase> {
-    if (!this.db) {
-      await this.initDB();
+      return await response.json();
+    } catch (error) {
+      console.error(`❌ API request failed for ${endpoint}:`, error);
+      throw error;
     }
-    if (!this.db) {
-      throw new Error('Failed to initialize IndexedDB');
-    }
-    return this.db;
   }
 
   async saveWatchlists(watchlists: Watchlist[]): Promise<void> {
     try {
-      const db = await this.ensureDB();
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-
-      // Clear existing watchlists and save new ones
-      await new Promise<void>((resolve, reject) => {
-        const clearRequest = store.clear();
-        
-        clearRequest.onsuccess = () => {
-          let pending = watchlists.length;
-          
-          if (pending === 0) {
-            resolve();
-            return;
-          }
-
-          watchlists.forEach(watchlist => {
-            const putRequest = store.put(watchlist);
-            
-            putRequest.onsuccess = () => {
-              pending--;
-              if (pending === 0) {
-                resolve();
-              }
-            };
-            
-            putRequest.onerror = () => {
-              reject(putRequest.error);
-            };
-          });
-        };
-        
-        clearRequest.onerror = () => {
-          reject(clearRequest.error);
-        };
+      await this.fetchApi('/watchlists/bulk', {
+        method: 'POST',
+        body: JSON.stringify({ watchlists }),
       });
 
-      console.log('Watchlists saved to IndexedDB:', watchlists.length);
+      console.log('✅ Watchlists saved via API:', watchlists.length);
     } catch (error) {
-      console.error('Error saving watchlists to IndexedDB:', error);
+      console.error('❌ Error saving watchlists via API:', error);
       throw error;
     }
   }
 
   async loadWatchlists(): Promise<Watchlist[]> {
     try {
-      const db = await this.ensureDB();
-      const transaction = db.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
+      const watchlists = await this.fetchApi<Watchlist[]>('/watchlists');
 
-      return new Promise<Watchlist[]>((resolve, reject) => {
-        const request = store.getAll();
-        
-        request.onsuccess = () => {
-          const watchlists = request.result || [];
-          console.log('Watchlists loaded from IndexedDB:', watchlists.length);
-          resolve(watchlists);
-        };
-        
-        request.onerror = () => {
-          console.error('Error loading watchlists from IndexedDB:', request.error);
-          reject(request.error);
-        };
-      });
+      // Convert date strings back to Date objects
+      const processedWatchlists = watchlists.map(watchlist => ({
+        ...watchlist,
+        createdAt: new Date(watchlist.createdAt),
+        updatedAt: new Date(watchlist.updatedAt),
+      }));
+
+      console.log('✅ Watchlists loaded via API:', processedWatchlists.length);
+      return processedWatchlists;
     } catch (error) {
-      console.error('Error accessing IndexedDB:', error);
-      // Return empty array if IndexedDB fails
-      return [];
+      console.error('❌ Error loading watchlists via API:', error);
+      // Return default watchlists if API fails
+      return this.getDefaultWatchlists();
     }
   }
 
   async saveWatchlist(watchlist: Watchlist): Promise<void> {
     try {
-      const db = await this.ensureDB();
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-
-      return new Promise<void>((resolve, reject) => {
-        const request = store.put(watchlist);
-        
-        request.onsuccess = () => {
-          console.log('Watchlist saved to IndexedDB:', watchlist.id);
-          resolve();
-        };
-        
-        request.onerror = () => {
-          console.error('Error saving watchlist to IndexedDB:', request.error);
-          reject(request.error);
-        };
-      });
+      // Try to update first, if not found, create new
+      try {
+        await this.fetchApi(`/watchlists/${watchlist.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(watchlist),
+        });
+        console.log('✅ Watchlist updated via API:', watchlist.id);
+      } catch (error) {
+        // If update fails (404), create new watchlist
+        if (error instanceof Error && error.message.includes('404')) {
+          await this.fetchApi('/watchlists', {
+            method: 'POST',
+            body: JSON.stringify(watchlist),
+          });
+          console.log('✅ Watchlist created via API:', watchlist.id);
+        } else {
+          throw error;
+        }
+      }
     } catch (error) {
-      console.error('Error saving watchlist:', error);
+      console.error('❌ Error saving watchlist via API:', error);
       throw error;
     }
   }
 
   async deleteWatchlist(id: string): Promise<void> {
     try {
-      const db = await this.ensureDB();
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
-
-      return new Promise<void>((resolve, reject) => {
-        const request = store.delete(id);
-        
-        request.onsuccess = () => {
-          console.log('Watchlist deleted from IndexedDB:', id);
-          resolve();
-        };
-        
-        request.onerror = () => {
-          console.error('Error deleting watchlist from IndexedDB:', request.error);
-          reject(request.error);
-        };
+      await this.fetchApi(`/watchlists/${id}`, {
+        method: 'DELETE',
       });
+
+      console.log('✅ Watchlist deleted via API:', id);
     } catch (error) {
-      console.error('Error deleting watchlist:', error);
+      console.error('❌ Error deleting watchlist via API:', error);
       throw error;
     }
   }
 
   async getDefaultWatchlists(): Promise<Watchlist[]> {
-    // Return default watchlists if IndexedDB is empty
+    // Return default watchlists as fallback
     const now = new Date();
     return [
       {

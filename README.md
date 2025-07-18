@@ -15,10 +15,7 @@ A modern, real-time trading dashboard built with React, TypeScript, and Tailwind
 
 - **Charts & Technical Indicators**
 
-  - Multi-timeframe charts (1M, 5M, 15M, 30M, 1H, 4H, 1D)
-  - Technical indicators: VWAP, EMA20, EMA50
-  - Volume charts with area visualization
-  - Interactive tooltips and responsive design
+  - TradingView Advanced chart
 
 - **News Feed & AI Summarization**
   - Filtered news by category (Earnings, Upgrades, Movers)
@@ -49,6 +46,8 @@ A modern, real-time trading dashboard built with React, TypeScript, and Tailwind
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18 + TypeScript
+- **Backend**: Node.js with PostgreSQL
+- **Database**: PostgreSQL 15 with connection pooling
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS with custom trading theme
 - **Charts**: Recharts for financial visualization
@@ -56,6 +55,7 @@ A modern, real-time trading dashboard built with React, TypeScript, and Tailwind
 - **Real-time Data**: WebSocket with reconnection logic
 - **Icons**: Lucide React
 - **Layout**: React Resizable Panels
+- **Containerization**: Docker & Docker Compose
 
 ## 🎨 Design Features
 
@@ -73,9 +73,50 @@ A modern, real-time trading dashboard built with React, TypeScript, and Tailwind
 
 ### Local Development
 
+#### Option 1: With Docker (Recommended)
+
+**Quick Start with Deployment Script:**
+
+```bash
+# Clone repository
+git clone https://github.com/cgeorges/tradingboard.git
+cd tradingboard
+
+# For Linux/macOS
+chmod +x deploy.sh
+./deploy.sh dev
+
+# For Windows PowerShell
+.\deploy.ps1 dev
+```
+
+**Manual Docker Setup:**
+
+```bash
+# Create environment file
+cp .env.example .env
+# Edit .env with your database credentials and API keys
+
+# Start all services (app + PostgreSQL)
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+#### Option 2: Local Node.js + External PostgreSQL
+
 ```bash
 # Install dependencies
 npm install
+
+# Set up PostgreSQL database
+# - Install PostgreSQL locally or use cloud provider
+# - Create database and run init.sql script
+# - Configure .env with your database credentials
 
 # Start development server
 npm run dev
@@ -87,35 +128,122 @@ npm run build
 npm run preview
 ```
 
-### 🐳 Docker Deployment
+#### Database Setup (Option 2)
 
-The application is containerized for easy production deployment:
+If running locally without Docker:
 
 ```bash
-# Build and run with Docker Compose
+# Create database
+createdb tradingboard
+
+# Run initialization script
+psql -d tradingboard -f init.sql
+
+# Or connect and run manually
+psql -d tradingboard
+\i init.sql
+```
+
+### 🐳 Docker Deployment
+
+The application is containerized with PostgreSQL for easy production deployment:
+
+#### Prerequisites
+
+1. **Create Environment File**: Copy `.env.example` to `.env` and configure your database credentials:
+
+```bash
+cp .env.example .env
+# Edit .env with your preferred database credentials
+```
+
+2. **Install Dependencies** (for local development):
+
+```bash
+npm install
+```
+
+#### Deployment
+
+```bash
+# Build and run with Docker Compose (includes PostgreSQL)
 docker-compose up -d
 
-# Or build and run manually
+# Or build and run manually (requires external PostgreSQL)
 docker build -t tradingboard .
-docker run -p 8080:80 tradingboard
+docker run -p 8080:80 \
+  -e DB_HOST=your_postgres_host \
+  -e DB_USER=your_db_user \
+  -e DB_PASSWORD=your_db_password \
+  tradingboard
 ```
 
 The application will be available at `http://localhost:8080`
 
+#### Docker Services
+
+- **tradingboard**: Main React application (port 8080)
+- **postgres**: PostgreSQL database (port 5432)
+- **postgres_data**: Persistent volume for database storage
+
 #### Docker Commands
+
+**Development (build locally):**
 
 ```bash
 # Stop services
 docker-compose down
 
+# Stop and remove volumes (⚠️  deletes database data)
+docker-compose down -v
+
 # View logs
 docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f frontend
+docker-compose logs -f backend
+docker-compose logs -f postgres
 
 # Rebuild and restart
 docker-compose up --build -d
 
 # Check health status
 docker-compose ps
+
+# Access PostgreSQL directly
+docker-compose exec postgres psql -U ${DB_USER} -d ${DB_NAME}
+```
+
+**Production (use published images):**
+
+```bash
+# Deploy with published images
+docker-compose -f docker-compose.prod.yml up -d
+
+# Update to latest images
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up -d
+
+# View production logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Scale services (if needed)
+docker-compose -f docker-compose.prod.yml up -d --scale backend=2
+```
+
+#### Database Management
+
+```bash
+# Backup database
+docker-compose exec postgres pg_dump -U tradingboard_user tradingboard > backup.sql
+
+# Restore database
+docker-compose exec -T postgres psql -U tradingboard_user tradingboard < backup.sql
+
+# Reset database (⚠️  deletes all data)
+docker-compose down -v
+docker-compose up -d
 ```
 
 ### 📦 Publishing Docker Image
@@ -179,7 +307,12 @@ docker push ghcr.io/yourusername/tradingboard:v1.0.0
 
 #### 🤖 Automated Publishing with GitHub Actions
 
-**Automated builds are already configured!** Every merge to the main branch automatically builds and pushes to Docker Hub at `cgeorges/tradingboard`.
+**Automated builds are already configured!** Every merge to the main branch automatically builds and pushes both frontend and backend images to Docker Hub.
+
+**Published Images:**
+
+- 🖥️ **Frontend**: `cgeorges/tradingboard-frontend:latest`
+- 🔧 **Backend**: `cgeorges/tradingboard-backend:latest`
 
 **Setup Requirements:**
 
@@ -202,13 +335,66 @@ docker push ghcr.io/yourusername/tradingboard:v1.0.0
 
 **What happens automatically:**
 
-- ✅ Builds multi-platform image (amd64, arm64)
-- ✅ Pushes to `cgeorges/tradingboard:latest`
-- ✅ Tags with branch name and commit SHA
-- ✅ Updates Docker Hub description from README
+- ✅ Builds multi-platform images (amd64, arm64) for both frontend and backend
+- ✅ Pushes to Docker Hub with latest and SHA tags
+- ✅ Updates Docker Hub descriptions from README
 - ✅ Uses build cache for faster builds
+- ✅ Separate caching for frontend and backend
+
+**Production Deployment:**
+
+Use the production compose file with published images:
+
+```bash
+# Quick production deployment with script
+./deploy.sh prod              # Linux/macOS
+.\deploy.ps1 prod            # Windows PowerShell
+
+# Manual production deployment
+cp .env.example .env.prod
+# Edit .env.prod with your production configuration
+docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d
+
+# Or pull latest images manually
+docker pull cgeorges/tradingboard-frontend:latest
+docker pull cgeorges/tradingboard-backend:latest
+```
+
+**Deployment Script Features:**
+
+- ✅ Environment validation (dev/prod)
+- ✅ Automatic .env file creation
+- ✅ Health checks after deployment
+- ✅ Cross-platform support (Linux/macOS/Windows)
+- ✅ Image pulling for production
+- ✅ Service status reporting
 
 **Manual Publishing (if needed):**
+
+## 🗃️ Data Storage
+
+TradingBoard now uses **PostgreSQL** for persistent data storage, replacing the previous IndexedDB implementation.
+
+### Database Schema
+
+- **watchlists**: Stores user watchlists with symbols and settings
+- **alerts**: Market alerts and notifications (future feature)
+
+### Migration from IndexedDB
+
+If you're upgrading from a previous version that used IndexedDB:
+
+1. Your old watchlist data was stored locally in the browser
+2. The new PostgreSQL setup will start with default watchlists
+3. You can manually recreate your watchlists in the new system
+4. Future versions may include an import tool for migration
+
+### Data Persistence
+
+- **Watchlists**: Stored in PostgreSQL with automatic timestamps
+- **User Preferences**: Stored in PostgreSQL (extensible schema)
+- **Market Data**: Cached in memory, not persisted (real-time)
+- **Alerts**: Future feature, will use PostgreSQL
 
 ## 🔧 Configuration
 
@@ -217,6 +403,13 @@ docker push ghcr.io/yourusername/tradingboard:v1.0.0
 Create a `.env` file in the root directory:
 
 ```env
+# Database Configuration (Required)
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=tradingboard
+DB_USER=tradingboard_user
+DB_PASSWORD=tradingboard_password
+
 # Polygon.io API Key for real-time stock data and news
 # Get your free API key at: https://polygon.io/
 VITE_POLYGON_API_KEY=your_polygon_api_key_here

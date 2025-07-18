@@ -1,0 +1,29 @@
+{
+  "name": "tradingboard-backend",
+  "version": "1.0.0",
+  "description": "Backend API service for TradingBoard",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "build": "echo 'No build step required for backend'"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "pg": "^8.11.3",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/compression": "^1.7.5",
+    "@types/pg": "^8.10.9"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 
