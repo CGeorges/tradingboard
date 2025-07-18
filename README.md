@@ -8,40 +8,14 @@ A modern, real-time trading dashboard built with React, TypeScript, and Tailwind
 
 - **Real-Time Market Data**
 
-  - Live price updates with WebSocket support
-  - Bid/Ask spreads and volume data
   - Custom watchlists (My Watchlist, High Volatility)
   - Add/remove symbols dynamically
 
 - **Charts & Technical Indicators**
-
   - TradingView Advanced chart
-
-- **News Feed & AI Summarization**
-  - Filtered news by category (Earnings, Upgrades, Movers)
-  - Sentiment analysis indicators
-  - AI-powered news summarization (ready for agent-forge integration)
-  - Real-time news updates
-
-### 🔄 Coming Soon (Phase 2)
-
-- **Trade Execution Panel**
-
-  - Place, modify, and cancel orders
-  - Bracket orders with stop-loss/take-profit
-  - Hotkey support for rapid execution
-
-- **Analytics & PnL Tracking**
-
-  - Real-time PnL and position overview
-  - Daily win/loss statistics
-  - Risk metrics: max drawdown, R multiple, expectancy
-
-- **Journal & Review Tools**
-  - Trade thesis tracking
-  - Entry/exit screenshots
-  - Pattern tagging and review
-  - Export to Notion/Excel
+  - TradingView News
+  - TradingView Calendar
+  - TradingView Heatmap
 
 ## 🛠️ Tech Stack
 
@@ -94,7 +68,7 @@ chmod +x deploy.sh
 
 ```bash
 # Create environment file
-cp .env.example .env
+cp .env.sample .env
 # Edit .env with your database credentials and API keys
 
 # Start all services (app + PostgreSQL)

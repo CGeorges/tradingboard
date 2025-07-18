@@ -89,6 +89,16 @@ try {
         }
     }
 
+    # Create external volume if it doesn't exist
+    Write-Status "Ensuring postgres data volume exists..."
+    $existingVolume = docker volume ls -q | Where-Object { $_ -eq "tradingboard_postgres_data" }
+    if (-not $existingVolume) {
+        docker volume create tradingboard_postgres_data
+        Write-Success "Created postgres data volume"
+    } else {
+        Write-Status "Postgres data volume already exists"
+    }
+
     # Stop existing containers
     Write-Status "Stopping existing containers..."
     docker-compose -f $ComposeFile --env-file $EnvFile down

@@ -84,6 +84,15 @@ if [ "$ENVIRONMENT" = "prod" ] || [ "$PULL_IMAGES" = "--pull" ]; then
     print_success "Images pulled successfully"
 fi
 
+# Create external volume if it doesn't exist
+print_status "Ensuring postgres data volume exists..."
+if ! docker volume ls -q | grep -q "tradingboard_postgres_data"; then
+    docker volume create tradingboard_postgres_data
+    print_success "Created postgres data volume"
+else
+    print_status "Postgres data volume already exists"
+fi
+
 # Stop existing containers
 print_status "Stopping existing containers..."
 docker-compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" down

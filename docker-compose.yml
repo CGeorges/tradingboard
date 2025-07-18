@@ -84,6 +84,8 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: tradingboard_postgres_data
 
 networks:
   tradingboard-network:
