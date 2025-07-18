@@ -114,7 +114,7 @@ const Watchlist: React.FC = () => {
 
   const handleDeleteWatchlist = (id: string) => {
     const watchlist = watchlists.find((w) => w.id === id);
-    if (watchlist && !watchlist.isDefault && watchlists.length > 1) {
+    if (watchlist && watchlists.length > 1) {
       removeWatchlist(id);
     }
     setShowWatchlistMenu(null);
@@ -266,7 +266,7 @@ const Watchlist: React.FC = () => {
                     <Copy className="w-3 h-3" />
                     <span>Duplicate</span>
                   </button>
-                  {!watchlist.isDefault && watchlists.length > 1 && (
+                  {watchlists.length > 1 && (
                     <button
                       onClick={() => handleDeleteWatchlist(watchlist.id)}
                       className="flex items-center space-x-2 px-3 py-2 text-sm hover:bg-trading-danger text-trading-danger w-full text-left"

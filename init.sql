@@ -38,7 +38,7 @@ CREATE TRIGGER update_watchlists_updated_at
 -- Insert default watchlists
 INSERT INTO watchlists (id, name, symbols, pinned_symbols, is_default) VALUES
     ('default', 'My Watchlist', ARRAY['AAPL', 'MSFT', 'GOOGL', 'TSLA', 'AMZN'], ARRAY['AAPL'], true),
-    ('volatility', 'High Volatility', ARRAY['GME', 'AMC', 'PLTR', 'ROKU'], ARRAY[]::TEXT[], true)
+    ('volatility', 'High Volatility', ARRAY['GME', 'AMC', 'PLTR', 'ROKU'], ARRAY[]::TEXT[], false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Future tables can be added here as the application grows

@@ -46,7 +46,7 @@ export interface Watchlist {
   pinnedSymbols: string[]; // Symbols pinned to the top
   createdAt: Date;
   updatedAt: Date;
-  isDefault?: boolean; // Prevent deletion of default watchlists
+  isDefault?: boolean; // Indicates if this is a system-provided watchlist
 }
 
 export interface MarketAlert {

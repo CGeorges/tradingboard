@@ -198,14 +198,14 @@ export function createWatchlistRoutes(dbService) {
       const { id } = req.params;
 
       const result = await dbService.query(
-        'DELETE FROM watchlists WHERE id = $1 AND (is_default = false OR is_default IS NULL) RETURNING *',
+        'DELETE FROM watchlists WHERE id = $1 RETURNING *',
         [id]
       );
 
       if (result.rows.length === 0) {
         return res.status(404).json({
-          error: 'Watchlist not found or cannot be deleted',
-          message: `Watchlist with ID ${id} does not exist or is a default watchlist`
+          error: 'Watchlist not found',
+          message: `Watchlist with ID ${id} does not exist`
         });
       }
 
@@ -236,8 +236,8 @@ export function createWatchlistRoutes(dbService) {
       }
 
       await dbService.transaction(async (client) => {
-        // Clear existing non-default watchlists
-        await client.query('DELETE FROM watchlists WHERE is_default = false OR is_default IS NULL');
+        // Clear all existing watchlists
+        await client.query('DELETE FROM watchlists');
         
         // Insert new watchlists
         for (const watchlist of watchlists) {

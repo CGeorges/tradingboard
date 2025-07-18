@@ -138,7 +138,7 @@ export class WatchlistStorageService {
         pinnedSymbols: [],
         createdAt: now,
         updatedAt: now,
-        isDefault: true
+        isDefault: false
       }
     ];
   }
