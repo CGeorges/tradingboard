@@ -19,8 +19,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - tradingboard-network
 
   backend:
     build:
@@ -52,8 +50,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-    networks:
-      - tradingboard-network
 
   frontend:
     build:
@@ -79,14 +75,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    networks:
-      - tradingboard-network
-
-volumes:
-  postgres_data:
-    external: true
-    name: tradingboard_postgres_data
-
-networks:
-  tradingboard-network:
-    driver: bridge
