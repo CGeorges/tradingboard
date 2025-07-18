@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -321,7 +321,7 @@ const Watchlist: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-1 p-2">
-            {filteredSymbols.map((symbol, index) => {
+            {filteredSymbols.map((symbol) => {
               const isPinned = pinnedSymbols.includes(symbol);
               return (
                 <div

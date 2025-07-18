@@ -115,15 +115,6 @@ export class MarketDataService {
   }
 
   // Utility methods for date formatting
-  private getDateDaysAgo(days: number): string {
-    const date = new Date();
-    date.setDate(date.getDate() - days);
-    return this.getDateString(date);
-  }
-
-  private getDateString(date: Date): string {
-    return date.toISOString().split('T')[0];
-  }
 
   // Legacy methods for compatibility (no-op since TradingView handles subscriptions)
   public subscribe(symbol: string) {

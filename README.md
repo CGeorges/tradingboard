@@ -71,6 +71,8 @@ A modern, real-time trading dashboard built with React, TypeScript, and Tailwind
 
 ## 📦 Installation
 
+### Local Development
+
 ```bash
 # Install dependencies
 npm install
@@ -84,6 +86,129 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+### 🐳 Docker Deployment
+
+The application is containerized for easy production deployment:
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Or build and run manually
+docker build -t tradingboard .
+docker run -p 8080:80 tradingboard
+```
+
+The application will be available at `http://localhost:8080`
+
+#### Docker Commands
+
+```bash
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Rebuild and restart
+docker-compose up --build -d
+
+# Check health status
+docker-compose ps
+```
+
+### 📦 Publishing Docker Image
+
+#### Docker Hub
+
+1. **Login to Docker Hub:**
+
+```bash
+docker login
+```
+
+2. **Build and tag the image:**
+
+```bash
+# Replace 'yourusername' with your Docker Hub username
+docker build -t yourusername/tradingboard:latest .
+docker build -t yourusername/tradingboard:v1.0.0 .
+```
+
+3. **Push to Docker Hub:**
+
+```bash
+docker push yourusername/tradingboard:latest
+docker push yourusername/tradingboard:v1.0.0
+```
+
+4. **Use the published image:**
+
+```bash
+docker run -p 8080:80 yourusername/tradingboard:latest
+```
+
+#### GitHub Container Registry (GHCR)
+
+1. **Create a Personal Access Token:**
+
+   - Go to GitHub Settings → Developer settings → Personal access tokens
+   - Create token with `write:packages` scope
+
+2. **Login to GHCR:**
+
+```bash
+echo $GITHUB_TOKEN | docker login ghcr.io -u yourusername --password-stdin
+```
+
+3. **Build and tag for GHCR:**
+
+```bash
+# Replace 'yourusername' with your GitHub username
+docker build -t ghcr.io/yourusername/tradingboard:latest .
+docker build -t ghcr.io/yourusername/tradingboard:v1.0.0 .
+```
+
+4. **Push to GHCR:**
+
+```bash
+docker push ghcr.io/yourusername/tradingboard:latest
+docker push ghcr.io/yourusername/tradingboard:v1.0.0
+```
+
+#### 🤖 Automated Publishing with GitHub Actions
+
+**Automated builds are already configured!** Every merge to the main branch automatically builds and pushes to Docker Hub at `cgeorges/tradingboard`.
+
+**Setup Requirements:**
+
+1. **Create Docker Hub Access Token:**
+
+   - Go to Docker Hub → Account Settings → Security
+   - Click "New Access Token"
+   - Copy the generated token
+
+2. **Add GitHub Secrets:**
+
+   - Go to your GitHub repo → Settings → Secrets and variables → Actions
+   - Add these repository secrets:
+     - `DOCKERHUB_USERNAME`: `cgeorges`
+     - `DOCKERHUB_TOKEN`: (your Docker Hub access token)
+
+3. **Trigger Build:**
+   - Push/merge to main branch
+   - Or manually trigger via Actions tab
+
+**What happens automatically:**
+
+- ✅ Builds multi-platform image (amd64, arm64)
+- ✅ Pushes to `cgeorges/tradingboard:latest`
+- ✅ Tags with branch name and commit SHA
+- ✅ Updates Docker Hub description from README
+- ✅ Uses build cache for faster builds
+
+**Manual Publishing (if needed):**
 
 ## 🔧 Configuration
 

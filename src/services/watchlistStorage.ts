@@ -30,7 +30,7 @@ export class WatchlistStorageService {
         
         // Create watchlists object store if it doesn't exist
         if (!db.objectStoreNames.contains(this.storeName)) {
-          const store = db.createObjectStore(this.storeName, { keyPath: 'id' });
+          db.createObjectStore(this.storeName, { keyPath: 'id' });
           console.log('Created watchlists object store');
         }
       };
