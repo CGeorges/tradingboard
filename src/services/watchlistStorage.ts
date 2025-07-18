@@ -73,8 +73,8 @@ export class WatchlistStorageService {
       return processedWatchlists;
     } catch (error) {
       console.error('❌ Error loading watchlists via API:', error);
-      // Return default watchlists if API fails
-      return this.getDefaultWatchlists();
+      // Throw the error instead of falling back to default watchlists
+      throw error;
     }
   }
 

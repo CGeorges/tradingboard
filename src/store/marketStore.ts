@@ -12,11 +12,13 @@ interface MarketStore {
   // Watchlists
   watchlists: Watchlist[];
   activeWatchlist: string | null;
+  watchlistError: string | null;
   
   // Actions
   setSelectedSymbol: (symbol: string | null) => void;
   
   initializeWatchlists: () => Promise<void>;
+  clearWatchlistError: () => void;
   addWatchlist: (watchlist: Watchlist) => void;
   removeWatchlist: (id: string) => void;
   updateWatchlist: (id: string, update: Partial<Watchlist>) => void;
@@ -40,16 +42,18 @@ export const useMarketStore = create<MarketStore>()(
     selectedSymbol: null,
     
     watchlists: [],
-    activeWatchlist: 'default',
+    activeWatchlist: null,
+    watchlistError: null,
     
     // Actions
     setSelectedSymbol: (symbol) => set({ selectedSymbol: symbol }),
     
     initializeWatchlists: async () => {
       try {
+        set({ watchlistError: null }); // Clear any previous errors
         let watchlists = await watchlistStorage.loadWatchlists();
         
-        // If no watchlists found in IndexedDB, use defaults
+        // If no watchlists found, use defaults
         if (watchlists.length === 0) {
           watchlists = await watchlistStorage.getDefaultWatchlists();
           await watchlistStorage.saveWatchlists(watchlists);
@@ -57,18 +61,21 @@ export const useMarketStore = create<MarketStore>()(
         
         set({ 
           watchlists,
-          activeWatchlist: watchlists.length > 0 ? watchlists[0].id : null
+          activeWatchlist: watchlists.length > 0 ? watchlists[0].id : null,
+          watchlistError: null
         });
       } catch (error) {
         console.error('Error initializing watchlists:', error);
-        // Fall back to default watchlists
-        const defaultWatchlists = await watchlistStorage.getDefaultWatchlists();
+        // Set error state instead of using fallback data
         set({ 
-          watchlists: defaultWatchlists,
-          activeWatchlist: defaultWatchlists.length > 0 ? defaultWatchlists[0].id : null
+          watchlists: [],
+          activeWatchlist: null,
+          watchlistError: 'Unable to connect to the database. Please check your database connection and try again.'
         });
       }
     },
+    
+    clearWatchlistError: () => set({ watchlistError: null }),
     
     addWatchlist: (watchlist) => {
       set((state) => ({
