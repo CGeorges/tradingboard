@@ -1,6 +1,31 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-trading-bg: #0b1426;
+  --color-trading-surface: #1a2332;
+  --color-trading-border: #2a3441;
+  --color-trading-text: #e2e8f0;
+  --color-trading-text-muted: #94a3b8;
+  --color-trading-accent: #3b82f6;
+  --color-trading-success: #10b981;
+  --color-trading-danger: #ef4444;
+  --color-trading-warning: #f59e0b;
+  --color-chart-green: #16a34a;
+  --color-chart-red: #dc2626;
+  --color-chart-volume: #6366f1;
+  --color-chart-grid: #374151;
+  
+  --font-family-mono: Consolas, Monaco, "Courier New", monospace;
+  
+  --animate-pulse-green: pulse 1s ease-in-out infinite;
+  --animate-pulse-red: pulse 1s ease-in-out infinite;
+  --animate-blink: blink 1s linear infinite;
+  
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+  }
+}
 
 @layer base {
   * {
@@ -34,15 +59,15 @@
   }
 
   .trading-button-primary {
-    @apply trading-button bg-trading-accent text-white hover:bg-blue-600;
+    @apply px-3 py-1.5 rounded text-sm font-medium transition-colors bg-trading-accent text-white hover:bg-blue-600;
   }
 
   .trading-button-success {
-    @apply trading-button bg-trading-success text-white hover:bg-green-600;
+    @apply px-3 py-1.5 rounded text-sm font-medium transition-colors bg-trading-success text-white hover:bg-green-600;
   }
 
   .trading-button-danger {
-    @apply trading-button bg-trading-danger text-white hover:bg-red-600;
+    @apply px-3 py-1.5 rounded text-sm font-medium transition-colors bg-trading-danger text-white hover:bg-red-600;
   }
 
   .trading-input {
